@@ -25,13 +25,13 @@ A Python tool for searching and extracting question blocks from multiple PDFs, c
 
 1. **Clone the repository:**
 
-git clone https://github.com/yourusername/pdf-question-search.git
-cd pdf-question-search
+`git clone https://github.com/AxonCodez/tool.git`
+`cd pdf-question-search`
 
 
 2. **Install dependencies:**
 
-pip install pymupdf
+`pip install pymupdf`
 
 
 3. **Prepare your PDFs:**
@@ -41,7 +41,7 @@ pip install pymupdf
 
 1. **Run the tool with your search term:**
 
-python main.py "your_search_term"
+`python main.py "your_search_term"`
 
 - Replace `"your_search_term"` with the word or phrase you want to search for.
 
@@ -61,7 +61,7 @@ python main.py "your_search_term"
 
 ## Example
 
-python main.py "capacitor"
+`python main.py "capacitor"`
 
 - **Output:**  
   - `screenshots/Q1_page1_pdfname.png`
