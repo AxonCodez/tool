@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Question Search Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-hover: #2980b9;
+            --error: #e74c3c;
+            --success: #2ecc71;
+            --light: #f9f9f9;
+            --border: #e0e0e0;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .file-list {
+            margin-bottom: 30px;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .file-list label {
+            display: block;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .file-list label:hover {
+            color: var(--primary);
+        }
+        .prompt-area {
+            margin-bottom: 25px;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 16px;
+            margin-bottom: 10px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        button, .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        button:hover, .btn:hover {
+            background-color: var(--primary-hover);
+        }
+        .error {
+            color: var(--error);
+            margin-bottom: 20px;
+            background: #ffebee;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid var(--error);
+        }
+        .success {
+            color: var(--success);
+            margin-bottom: 20px;
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid var(--success);
+        }
+        .result {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        .result-header {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #2c3e50;
+        }
+        .result-text {
+            font-size: 15px;
+            line-height: 1.6;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            margin-bottom: 10px;
+        }
+        .result-text.expanded {
+            -webkit-line-clamp: unset;
+            display: block;
+            overflow: visible;
+        }
+        .show-more-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 5px 0;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .show-more-btn:hover {
+            text-decoration: underline;
+        }
+        .screenshot-thumb {
+            max-width: 300px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        .screenshot-thumb:hover {
+            transform: scale(1.03);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            overflow: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        .modal-img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--primary);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .upload-area {
+            margin-bottom: 30px;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .upload-area label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .file-input {
+            display: block;
+            margin-bottom: 15px;
+        }
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .delete-btn {
+            color: #e74c3c;
+            text-decoration: none;
+            margin-left: 10px;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .delete-btn:hover {
+            color: #c0392b;
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+            .screenshot-thumb {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <h1><i class="fas fa-search"></i> PDF Question Search Tool</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Upload PDF Form -->
+        <form method="post" enctype="multipart/form-data" class="upload-area">
+            <label for="pdf_file">Upload a PDF to add to database:</label>
+            <input type="file" name="pdf_file" id="pdf_file" accept=".pdf" class="file-input" required>
+            <button type="submit" name="upload_pdf" class="btn">
+                <i class="fas fa-upload"></i> Upload PDF
+            </button>
+        </form>
+
+        <!-- Search Form -->
+        <form method="post" onsubmit="showLoading()">
+            <div class="file-list">
+                <strong>Available PDFs:</strong><br>
+                {% for file in files %}
+                    <label>
+                        <input type="checkbox" name="pdf_files" value="{{ file }}" checked>
+                        <i class="fas fa-file-pdf"></i> {{ file }}
+                        <a href="{{ url_for('delete_file', filename=file) }}" 
+                           class="delete-btn" 
+                           onclick="return confirm('Are you sure you want to delete {{ file }}?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </label><br>
+                {% endfor %}
+            </div>
+
+            <div class="prompt-area">
+                <label for="prompt">Enter your search prompt:</label>
+                <textarea id="prompt" name="prompt" rows="3">{{ prompt }}</textarea>
+            </div>
+
+            <button type="submit">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+
+        <h2><i class="fas fa-list"></i> Results</h2>
+        {% if results %}
+            {% for res in results %}
+                <div class="result">
+                    <div class="result-header">
+                        <strong><i class="fas fa-file-pdf"></i> PDF:</strong> {{ res.pdf }} &nbsp;|&nbsp;
+                        <strong><i class="fas fa-book-open"></i> Page:</strong> {{ res.page }} &nbsp;|&nbsp;
+                        <strong><i class="fas fa-percent"></i> Similarity:</strong> {{ '%.3f' % res.similarity }}
+                    </div>
+                    <div class="result-text" id="text-{{ loop.index }}">
+                        {{ res.text }}
+                    </div>
+                    <button class="show-more-btn" onclick="toggleText('text-{{ loop.index }}', this)">
+                        Show More
+                    </button>
+                    <div>
+                        <img src="{{ url_for('static', filename=res.screenshot) }}" 
+                             alt="Screenshot" 
+                             class="screenshot-thumb"
+                             onclick="showModal('{{ url_for('static', filename=res.screenshot) }}')">
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-results">
+                <i class="fas fa-info-circle"></i> No results found.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Modal for enlarged screenshot -->
+    <div id="screenshotModal" class="modal">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImg" class="modal-img">
+        </div>
+    </div>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function toggleText(id, btn) {
+            const el = document.getElementById(id);
+            el.classList.toggle('expanded');
+            btn.textContent = el.classList.contains('expanded') ? 'Show Less' : 'Show More';
+        }
+
+        function showModal(src) {
+            const modal = document.getElementById('screenshotModal');
+            const modalImg = document.getElementById('modalImg');
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        function closeModal() {
+            document.getElementById('screenshotModal').style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('screenshotModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

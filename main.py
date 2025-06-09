@@ -8,8 +8,8 @@ from sentence_transformers import SentenceTransformer, util
 import torch
 
 def clear_screenshots():
-    """Clear all files in the screenshots folder."""
-    screenshots_dir = "screenshots"
+    """Clear all files in the screenshots folder inside static."""
+    screenshots_dir = os.path.join('static', 'screenshots')
     if os.path.exists(screenshots_dir):
         for filename in os.listdir(screenshots_dir):
             file_path = os.path.join(screenshots_dir, filename)
@@ -82,18 +82,23 @@ def find_question_blocks(pdf_path):
     return blocks
 
 def screenshot_question_block(pdf_path, block_info, zoom=2):
+    """Take screenshot of question block and save to static/screenshots/."""
+    screenshots_dir = os.path.join('static', 'screenshots')
+    os.makedirs(screenshots_dir, exist_ok=True)
     doc = fitz.open(pdf_path)
     page = doc[block_info["page"] - 1]
     x0, y0, x1, y1 = block_info["rect"]
     mat = fitz.Matrix(zoom, zoom)
     pix = page.get_pixmap(matrix=mat, clip=(x0, y0, x1, y1))
     img_name = f"Q{block_info['marker'].split()[0][1:]}_page{block_info['page']}_{os.path.splitext(os.path.basename(pdf_path))[0]}.png"
-    img_path = os.path.join("screenshots", img_name)
+    img_path = os.path.join(screenshots_dir, img_name)
     pix.save(img_path)
     doc.close()
-    return img_path
+    # Return path relative to static for Flask url_for
+    return f"screenshots/{img_name}"
 
 def write_question_data(results, output_file="question_data.txt"):
+    """Write question data to a text file (optional for web app)."""
     with open(output_file, "w", encoding="utf-8") as f:
         for result in results:
             f.write(f"PDF: {result['pdf']}\n")
@@ -106,6 +111,7 @@ def write_question_data(results, output_file="question_data.txt"):
             f.write("-" * 40 + "\n")
 
 if __name__ == "__main__":
+    # This block is optional; main logic will be in app.py for web use
     if len(sys.argv) < 2:
         print("Usage: python main.py <search_sentence>")
         sys.exit(1)
@@ -128,23 +134,13 @@ if __name__ == "__main__":
             question_blocks = find_question_blocks(pdf_path)
             print(f"Found {len(question_blocks)} question blocks in {pdf_file}")
 
-            # Debug: Print first 3 question texts if available
-            if question_blocks:
-                print("\nSample question texts (first 3):")
-                for i, block in enumerate(question_blocks[:3]):
-                    print(f"Question {i+1}: {block['marker']}")
-                    print(f"Text: {block['text'][:200]}...")
-                    print("-" * 40)
-            else:
-                print("No question blocks found in this PDF.")
-
             if not question_blocks:
                 continue
 
             question_texts = [block["text"] for block in question_blocks]
             # Encode question texts and search sentence
             question_embeddings = model.encode(question_texts, convert_to_tensor=True)
-            query_embedding = model.encode(search_sentence, convert_to_tensor=True)
+            query_embedding = model.encode([search_sentence], convert_to_tensor=True)
 
             # Use util.semantic_search for efficient top-k search
             top_k = 5  # Only keep top 5 results
@@ -166,14 +162,6 @@ if __name__ == "__main__":
                             "rect": block["rect"],
                             "similarity": float(hit['score'])
                         })
-                # Optional: keyword fallback (uncomment if needed)
-                # elif search_sentence.lower() in block["text"].lower():
-                #     img_path = screenshot_question_block(pdf_path, block)
-                #     if img_path:
-                #         results.append({
-                #             "pdf": block["pdf"],
-                            # ... (same as above)
-                #         })
 
     # Write question data to a text file
     write_question_data(results)
