@@ -1,0 +1,36 @@
+PDF: s2.pdf
+Page: 1
+Marker: Q1 - 2024 (01 Feb Shift 1)
+Screenshot: screenshots/Q1_page1_s2.png
+Rect: (30.25, 84.64331817626953, 558.8411254882812, 804.8607177734375)
+----------------------------------------
+PDF: s2.pdf
+Page: 2
+Marker: Q4 - 2024 (27 Jan Shift 1)
+Screenshot: screenshots/Q4_page2_s2.png
+Rect: (30.25, 82.39337158203125, 561.3663940429688, 804.8607177734375)
+----------------------------------------
+PDF: s2.pdf
+Page: 2
+Marker: Q5 - 2024 (29 Jan Shift 1)
+Screenshot: screenshots/Q5_page2_s2.png
+Rect: (30.25, 252.64337158203125, 561.3663940429688, 804.8607177734375)
+----------------------------------------
+PDF: s2.pdf
+Page: 2
+Marker: Q6 - 2024 (29 Jan Shift 1)
+Screenshot: screenshots/Q6_page2_s2.png
+Rect: (30.25, 453.6434326171875, 561.3663940429688, 804.8607177734375)
+----------------------------------------
+PDF: sample.pdf
+Page: 2
+Marker: Q5 - 2024 (27 Jan Shift 2)
+Screenshot: screenshots/Q5_page2_sample.png
+Rect: (30.25, 256.39337158203125, 561.0578002929688, 804.8607177734375)
+----------------------------------------
+PDF: sample.pdf
+Page: 2
+Marker: Q6 - 2024 (29 Jan Shift 2)
+Screenshot: screenshots/Q6_page2_sample.png
+Rect: (30.25, 355.3934326171875, 561.0578002929688, 804.8607177734375)
+----------------------------------------
