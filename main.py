@@ -4,9 +4,8 @@ import pymupdf as fitz  # PyMuPDF
 import re
 import os
 import shutil
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+from sentence_transformers import SentenceTransformer, util
+import torch
 
 def clear_screenshots():
     """Clear all files in the screenshots folder."""
@@ -108,11 +107,11 @@ def write_question_data(results, output_file="question_data.txt"):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python main.py <search_term>")
+        print("Usage: python main.py <search_sentence>")
         sys.exit(1)
-    search_term = sys.argv[1]
+    search_sentence = sys.argv[1]
     assets_folder = "./assets"
-    print(f"Search term: {search_term}")
+    print(f"Search sentence: {search_sentence}")
     print(f"Assets folder: {assets_folder}")
 
     # Clear screenshots before new search
@@ -139,27 +138,23 @@ if __name__ == "__main__":
             else:
                 print("No question blocks found in this PDF.")
 
-            question_texts = [block["text"] for block in question_blocks]
-            if not question_texts:
-                print("No question texts to process.")
+            if not question_blocks:
                 continue
 
-            # Get embeddings for all questions
-            question_embeddings = model.encode(question_texts)
-            # Get embedding for search term
-            prompt_embedding = model.encode([search_term])
-            # Compute similarities
-            similarities = cosine_similarity(prompt_embedding, question_embeddings)
-            print("\nSimilarities for each question block:")
-            for i, sim in enumerate(similarities[0]):
-                print(f"Question {i+1}: similarity = {sim:.3f}")
+            question_texts = [block["text"] for block in question_blocks]
+            # Encode question texts and search sentence
+            question_embeddings = model.encode(question_texts, convert_to_tensor=True)
+            query_embedding = model.encode(search_sentence, convert_to_tensor=True)
 
-            # Threshold for semantic relevance (lowered to 0.1)
-            threshold = 0.1
-            for i, sim in enumerate(similarities[0]):
-                block = question_blocks[i]
-                # Keyword fallback: include if search term is in text (case-insensitive)
-                if sim > threshold or search_term.lower() in block["text"].lower():
+            # Use util.semantic_search for efficient top-k search
+            top_k = 5  # Only keep top 5 results
+            hits = util.semantic_search(query_embedding, question_embeddings, top_k=top_k)[0]
+
+            # Threshold for semantic relevance (increase to reduce irrelevant results)
+            threshold = 0.3
+            for hit in hits:
+                if hit['score'] > threshold:
+                    block = question_blocks[hit['corpus_id']]
                     img_path = screenshot_question_block(pdf_path, block)
                     if img_path:
                         results.append({
@@ -169,8 +164,16 @@ if __name__ == "__main__":
                             "text": block["text"],
                             "screenshot": img_path,
                             "rect": block["rect"],
-                            "similarity": float(sim)
+                            "similarity": float(hit['score'])
                         })
+                # Optional: keyword fallback (uncomment if needed)
+                # elif search_sentence.lower() in block["text"].lower():
+                #     img_path = screenshot_question_block(pdf_path, block)
+                #     if img_path:
+                #         results.append({
+                #             "pdf": block["pdf"],
+                            # ... (same as above)
+                #         })
 
     # Write question data to a text file
     write_question_data(results)

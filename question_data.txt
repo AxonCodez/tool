@@ -1,149 +1,85 @@
-PDF: s2.pdf
+PDF: sample.pdf
 Page: 1
 Marker: Q1 - 2024 (01 Feb Shift 1)
-Screenshot: screenshots/Q1_page1_s2.png
+Screenshot: screenshots/Q1_page1_sample.png
 Text: Q1 - 2024 (01 Feb Shift 1)
-Two identical capacitors have same capacitance . One of them is charged to the potential  and other to the
-potential 
-. The negative ends of both are connected together. When the positive ends are also joined
-together, the decrease in energy of the combined system is :
+A parallel plate capacitor has a capacitance 
+. It is connected to 
+ ac supply with an angular
+frequency 
+. The rms value of conduction current in the circuit and displacement current in the
+capacitor respectively are :
 (1) 
-(2) 
-(3) 
-(4) 
-C
-V
-2 V
-CV2
-1
-4
-2CV2
-CV2
-1
-2
-CV2
-3
-4
-
-Rect: (30.25, 84.64331817626953, 554.183349609375, 278.3912353515625)
-Similarity: 0.06986325979232788
-----------------------------------------
-PDF: s2.pdf
-Page: 2
-Marker: Q5 - 2024 (29 Jan Shift 1)
-Screenshot: screenshots/Q5_page2_s2.png
-Text: Q5 - 2024 (29 Jan Shift 1)
-A capacitor of capacitance 
- is charged to a potential of 
- and connected to a 
- inductor to
-produce oscillations. The maximum current in the circuit would be :
-(1) 
-(2) 
-(3) 
-(4) 
-100μF
-12 V
-6.4mH
-3.2 A
-1.5 A
-2.0 A
-1.2 A
-
-Rect: (30.25, 252.64337158203125, 536.90625, 418.0301208496094)
-Similarity: 0.14228790998458862
-----------------------------------------
-PDF: s2.pdf
-Page: 2
-Marker: Q6 - 2024 (29 Jan Shift 1)
-Screenshot: screenshots/Q6_page2_s2.png
-Text: Q6 - 2024 (29 Jan Shift 1)
-A 
- wire is bend to form a square loop. A 
- battery with internal resistance 
- is connected across one of
-its sides. If a 
- capacitor is connected across one of its diagonals, the energy stored by the capacitor will be
-. where 
- _____
-16Ω
-9 V
-1Ω
-4μF
-μJ
-x
-2
-x =
-
-Rect: (30.25, 453.6434326171875, 561.3663940429688, 545.391357421875)
-Similarity: 0.0782952606678009
-----------------------------------------
-PDF: sample.pdf
-Page: 2
-Marker: Q6 - 2024 (29 Jan Shift 2)
-Screenshot: screenshots/Q6_page2_sample.png
-Text: Q6 - 2024 (29 Jan Shift 2)
-In an a.c. circuit, voltage and current are given by : 
  and 
-respectively.
-The average power dissipated in one cycle is :
-(1) 
 (2) 
+ and 
 (3) 
+ and 
 (4) 
-V = 100 sin(100t)V
-I = 100 sin(100t +
-)mA
-π
-3
-5 W
-10 W
-2.5 W
-25 W
+ and 
+C = 200pF
+230 V
+300rad/s
+1.38μA
+1.38μA
+14.3μA
+143μA
+13.8μA
+138μA
+13.8μA
+13.8μA
 
-Rect: (30.25, 355.3934326171875, 541.2306518554688, 545.5301513671875)
-Similarity: 0.13253499567508698
-----------------------------------------
-PDF: sample.pdf
-Page: 3
-Marker: Q8 - 2024 (30 Jan Shift 1)
-Screenshot: screenshots/Q8_page3_sample.png
-Text: Q8 - 2024 (30 Jan Shift 1)
-Primary coil of a transformer is connected to 220 V ac. Primary and secondary turns of the transforms are 100
-and 10 respectively. Secondary coil of transformer is connected to two series resistance shown in shown in
-figure. The output voltage 
- is :
-(1) 
-(2) 
-(3) 
-(4) 
-(V0)
-7 V
-15 V
-44 V
-22 V
-
-Rect: (30.25, 332.143310546875, 558.3422241210938, 627.2801513671875)
-Similarity: 0.1107313483953476
+Rect: (30.25, 84.64331817626953, 545.50732421875, 274.0299987792969)
+Similarity: 0.3817850649356842
 ----------------------------------------
 PDF: sample.pdf
 Page: 4
-Marker: Q11 - 2024 (30 Jan Shift 2)
-Screenshot: screenshots/Q11_page4_sample.png
-Text: Q11 - 2024 (30 Jan Shift 2)
-A power transmission line feeds input power at 2.3 
- to a step down transformer with its primary winding
-having 3000 turns. The output power is delivered at 
- by the transformer. The current in the primary of
-the transformer is 
- and its efficiency is 
-. The winding of transformer is made of copper. The output
-current of transformer is_____ A.
-kV
-230 V
-5 A
-90%
+Marker: Q10 - 2024 (30 Jan Shift 2)
+Screenshot: screenshots/Q10_page4_sample.png
+Text: Q10 - 2024 (30 Jan Shift 2)
+An alternating voltage 
+ volt is applied to a purely resistive load of 
+. The time taken
+for the current to rise from half of the peak value to the peak value is:
+(1) 
+(2) 
+(3) 
+(4) 
+V(t) = 220 sin 100πt
+50Ω
+5 ms
+3.3 ms
+7.2 ms
+2.2 ms
 
-Rect: (30.25, 383.1435546875, 548.0167846679688, 494.095947265625)
-Similarity: 0.13565921783447266
+Rect: (30.25, 182.1435546875, 553.556396484375, 347.5302429199219)
+Similarity: 0.37712448835372925
+----------------------------------------
+PDF: sample.pdf
+Page: 4
+Marker: Q12 - 2024 (31 Jan Shift 2)
+Screenshot: screenshots/Q12_page4_sample.png
+Text: Q12 - 2024 (31 Jan Shift 2)
+An AC voltage 
+ is applied to a series LCR circuit which drives a current
+. The average power dissipated is:
+(1) 
+(2) 
+(3) 
+(4) 
+ 
+Do you want to practice these PYQs along with PYQs of JEE Main from 2002 till 2024?
+Click here to download MARKS App
+V = 20 sin 200πt
+I = 10 sin(200πt +
+)
+π
+3
+21.6 W
+200 W
+173.2 W
+50 W
+
+Rect: (30.25, 530.1435546875, 500.74261474609375, 804.8607177734375)
+Similarity: 0.3097171485424042
 ----------------------------------------
