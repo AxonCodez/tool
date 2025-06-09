@@ -4,6 +4,9 @@ import pymupdf as fitz  # PyMuPDF
 import re
 import os
 import shutil
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 def clear_screenshots():
     """Clear all files in the screenshots folder."""
@@ -27,34 +30,53 @@ def find_question_blocks(pdf_path):
     for page_num in range(len(doc)):
         page = doc[page_num]
         text_blocks = page.get_text("blocks")
-        text_blocks.sort(key=lambda b: b[1])
+        text_blocks.sort(key=lambda b: b[1])  # sort by y-coordinate (top to bottom)
         page_text = page.get_text()
-        markers = re.finditer(r'Q\d+\s*-\s*\d+\s*\(.*?\)', page_text)
+        markers = list(re.finditer(r'Q\d+\s*-\s*\d+\s*\(.*?\)', page_text))
         marker_positions = [(m.start(), m.end(), m.group()) for m in markers]
-        for start, end, marker_text in marker_positions:
+
+        for i, (start, end, marker_text) in enumerate(marker_positions):
+            # Find the block containing the current marker
             marker_block = None
             for block in text_blocks:
-                if marker_text in block[4]:
+                if marker_text in block[4]:  # block[4] is the text
                     marker_block = block
                     break
             if not marker_block:
                 continue
+
             x0, y0, x1, y1 = marker_block[0:4]
             min_x, max_x = x0, x1
-            for block in text_blocks:
-                if block[1] > y0:
-                    if block[1] - y1 < 200:
-                        min_x = min(min_x, block[0])
-                        max_x = max(max_x, block[2])
-                        y1 = max(y1, block[3])
-                    else:
+
+            # Find the next question marker on the same page
+            next_y1 = page.rect.y1  # default to end of page
+            if i + 1 < len(marker_positions):
+                next_marker = marker_positions[i+1]
+                # Find the block containing the next marker
+                for block in text_blocks:
+                    if next_marker[2] in block[4]:
+                        next_y1 = block[1]  # top of next question block
                         break
-            y1 = min(y1, page.rect.y1)
+
+            # Expand the bounding box to include options and text below, but not beyond next question
+            for block in text_blocks:
+                if block[1] > y0 and block[3] < next_y1:
+                    min_x = min(min_x, block[0])
+                    max_x = max(max_x, block[2])
+                    y1 = max(y1, block[3])
+
+            # Ensure y1 does not go beyond the next question or page bottom
+            y1 = min(y1, next_y1)
             max_x = min(max_x, page.rect.x1)
+
+            # Extract the text in this region
+            question_text = page.get_text("text", clip=(min_x, y0, max_x, y1))
+
             blocks.append({
                 "pdf": os.path.basename(pdf_path),
                 "page": page_num + 1,
                 "marker": marker_text,
+                "text": question_text,
                 "rect": (min_x, y0, max_x, y1)
             })
     doc.close()
@@ -72,28 +94,16 @@ def screenshot_question_block(pdf_path, block_info, zoom=2):
     doc.close()
     return img_path
 
-def find_relevant_blocks(search_term, question_blocks, pdf_path):
-    doc = fitz.open(pdf_path)
-    relevant = []
-    search_term = search_term.lower()
-    for block in question_blocks:
-        page = doc[block["page"] - 1]
-        x0, y0, x1, y1 = block["rect"]
-        text = page.get_text("text", clip=(x0, y0, x1, y1))
-        if search_term in text.lower():
-            relevant.append(block)
-    doc.close()
-    return relevant
-
 def write_question_data(results, output_file="question_data.txt"):
-    """Write question data to a text file."""
     with open(output_file, "w", encoding="utf-8") as f:
         for result in results:
             f.write(f"PDF: {result['pdf']}\n")
             f.write(f"Page: {result['page']}\n")
             f.write(f"Marker: {result['marker']}\n")
             f.write(f"Screenshot: {result['screenshot']}\n")
+            f.write(f"Text: {result['text']}\n")
             f.write(f"Rect: {result['rect']}\n")
+            f.write(f"Similarity: {result.get('similarity', 'N/A')}\n")
             f.write("-" * 40 + "\n")
 
 if __name__ == "__main__":
@@ -108,25 +118,60 @@ if __name__ == "__main__":
     # Clear screenshots before new search
     clear_screenshots()
 
+    # Load semantic search model
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+
     results = []
     for pdf_file in os.listdir(assets_folder):
         if pdf_file.lower().endswith(".pdf"):
             pdf_path = os.path.join(assets_folder, pdf_file)
-            print(f"Processing: {pdf_path}")
+            print(f"\nProcessing: {pdf_path}")
             question_blocks = find_question_blocks(pdf_path)
-            relevant = find_relevant_blocks(search_term, question_blocks, pdf_path)
-            for block in relevant:
-                img_path = screenshot_question_block(pdf_path, block)
-                if img_path:
-                    results.append({
-                        "pdf": block["pdf"],
-                        "page": block["page"],
-                        "marker": block["marker"],
-                        "screenshot": img_path,
-                        "rect": block["rect"]
-                    })
+            print(f"Found {len(question_blocks)} question blocks in {pdf_file}")
+
+            # Debug: Print first 3 question texts if available
+            if question_blocks:
+                print("\nSample question texts (first 3):")
+                for i, block in enumerate(question_blocks[:3]):
+                    print(f"Question {i+1}: {block['marker']}")
+                    print(f"Text: {block['text'][:200]}...")
+                    print("-" * 40)
+            else:
+                print("No question blocks found in this PDF.")
+
+            question_texts = [block["text"] for block in question_blocks]
+            if not question_texts:
+                print("No question texts to process.")
+                continue
+
+            # Get embeddings for all questions
+            question_embeddings = model.encode(question_texts)
+            # Get embedding for search term
+            prompt_embedding = model.encode([search_term])
+            # Compute similarities
+            similarities = cosine_similarity(prompt_embedding, question_embeddings)
+            print("\nSimilarities for each question block:")
+            for i, sim in enumerate(similarities[0]):
+                print(f"Question {i+1}: similarity = {sim:.3f}")
+
+            # Threshold for semantic relevance (lowered to 0.1)
+            threshold = 0.1
+            for i, sim in enumerate(similarities[0]):
+                block = question_blocks[i]
+                # Keyword fallback: include if search term is in text (case-insensitive)
+                if sim > threshold or search_term.lower() in block["text"].lower():
+                    img_path = screenshot_question_block(pdf_path, block)
+                    if img_path:
+                        results.append({
+                            "pdf": block["pdf"],
+                            "page": block["page"],
+                            "marker": block["marker"],
+                            "text": block["text"],
+                            "screenshot": img_path,
+                            "rect": block["rect"],
+                            "similarity": float(sim)
+                        })
 
     # Write question data to a text file
     write_question_data(results)
-
-    print("Final results:", json.dumps(results, indent=2))
+    print("\nFinal results:", json.dumps(results, indent=2))
